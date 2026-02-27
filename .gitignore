@@ -1,0 +1,36 @@
+# Xcode
+.build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+
+# Swift Package Manager
+.build/
+Package.resolved
+
+# API Keys (IMPORTANT)
+api_keys.json
+.keys.plist
+*.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swot
+
+# Misc
+*.log
