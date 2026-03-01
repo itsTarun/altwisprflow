@@ -12,7 +12,7 @@ AI-powered voice dictation for macOS - transcribe speech to text 4x faster with 
 - Personal dictionary for custom words
 - Snippets library for reusable text
 - Floating overlay UI with live preview
-- Global keyboard shortcut (Option+Space)
+- Global keyboard shortcut (Control+Option+Space)
 - Works in any application (paste to active app)
 
 ## Requirements
@@ -42,7 +42,7 @@ AI-powered voice dictation for macOS - transcribe speech to text 4x faster with 
 
 ## Usage
 
-Press `Option + Space` to activate dictation. Speak naturally and text will be transcribed, edited, and pasted to your active application automatically.
+Press `Control + Option + Space` to activate dictation. Speak naturally and text will be transcribed, edited, and pasted to your active application automatically.
 
 ## Architecture
 

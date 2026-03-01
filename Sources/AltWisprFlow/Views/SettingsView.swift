@@ -34,7 +34,7 @@ struct GeneralSettingsView: View {
         Form {
             Section("Activation") {
                 Picker("Hotkey", selection: $viewModel.preferences.activationHotkey) {
-                    Text("Option+Space").tag("Option+Space")
+                    Text("Control+Option+Space").tag("Control+Option+Space")
                     Text("Command+Shift+D").tag("Command+Shift+D")
                     Text("Command+Space").tag("Command+Space")
                 }

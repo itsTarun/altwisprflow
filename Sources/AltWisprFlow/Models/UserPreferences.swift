@@ -8,7 +8,7 @@ final class UserPreferences: ObservableObject {
     @Published var openAIKey: String = ""
     @Published var editingConfig: EditingConfig = .default
     @Published var floatingOverlayEnabled: Bool = true
-    @Published var activationHotkey: String = "Option+Space"
+    @Published var activationHotkey: String = "Control+Option+Space"
     
     private init() {
         loadFromKeychain()

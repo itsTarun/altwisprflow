@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Initial Release
 
 #### Added
+
 - Real-time audio capture and transcription via AssemblyAI integration
 - OpenAI GPT-4o integration for intelligent text editing and cleanup
 - Automatic filler word removal (um, uh, like, you know)
@@ -16,15 +17,17 @@ All notable changes to this project will be documented in this file.
 - Snippets library for reusable text templates
 - Floating overlay UI with live transcript preview
 - Settings UI with preferences management
-- Global keyboard shortcut activation (Option+Space)
+- Global keyboard shortcut activation (Control+Option+Space)
 - End-to-end integration of all services
 - Unit tests for all core components
 
 #### Security
+
 - API keys stored securely in macOS Keychain
 - Secure credential management throughout application
 
 #### Documentation
+
 - Comprehensive README with setup and usage instructions
 - Implementation plan documenting architecture
 - CHANGELOG for version tracking
