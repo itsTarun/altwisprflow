@@ -24,12 +24,14 @@ _Decouple the UI from specific AI providers to enable "Local Mode"._
 _Implement the "Premium" fn key logic (Push-to-Talk)._
 
 - **Reference Issues:** #3, #5
-- **Files:** `HotkeyManager.swift`, `FloatingOverlayWindow.swift`.
+- **Files:** `HotkeyManager.swift`, `FloatingOverlayWindow.swift`, `AccessibilityManager.swift` (New).
 - **Tasks:**
-  1. Replace Carbon hotkeys with a `CGEventTap` to monitor the **Function (Globe)** key state.
-  2. Implement **Push-to-Talk (PTT)**: Record while `fn` is held, paste on release.
-  3. Implement **Double-Tap Latch**: Rapidly double-pressing `fn` keeps the mic ON (sticky mode).
-  4. Implement **Multi-Screen Support**: Move overlay to the screen with the active mouse/focus.
+  1. Implement `AccessibilityManager` to check/prompt for macOS Accessibility permissions (required for PTT and Auto-Paste).
+  2. Replace Carbon hotkeys with a `CGEventTap` to monitor the **Function (Globe)** key state.
+  3. Implement **Push-to-Talk (PTT)**: Record while `fn` is held, paste on release.
+  4. Implement **Double-Tap Latch** (400ms window): Rapidly double-pressing `fn` keeps the mic ON (sticky mode).
+  5. **Visual Feedback:** Update the overlay with a clear visual indicator (e.g., a "Locked" or "Sticky" icon) when in latched mode.
+  6. Implement **Multi-Screen Support**: Move overlay to the screen with the active mouse/focus.
 
 ### **Track C: Security & Model Research (Agent 3 - Research)**
 
@@ -63,4 +65,5 @@ _Give users control over the new features._
 - **Reference Issue:** #4
 - **Tasks:**
   1. Add the "Cloud vs Local" switch in the Settings UI.
-  2. Add visual indicators for "Latched" mode in the overlay.
+  2. **Download UI:** If "Local Mode" is selected and the model is missing, show a **Download Progress Bar** with a "Download" button.
+  3. Update `UserPreferences` to persist the chosen transcription mode.
