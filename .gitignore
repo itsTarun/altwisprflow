@@ -50,6 +50,9 @@ trigger_hotkey.scpt
 
 .ruff_cache/
 
+# Private docs/plans (local only)
+docs/
+
 .agents
 .cursor
 .claude

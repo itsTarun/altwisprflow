@@ -46,7 +46,7 @@ Press `Option + Space` to activate dictation. Speak naturally and text will be t
 
 ## Architecture
 
-See `docs/plans/2025-02-28-altwisprflow-design.md` for detailed architecture and implementation plan.
+The app follows a modular architecture with separate services for audio capture, transcription (AssemblyAI), AI editing (OpenAI), and secure credential storage (Keychain).
 
 ## Testing
 
