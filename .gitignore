@@ -48,6 +48,8 @@ test_sdk.py
 trigger_hotkey.scpt
 *.scpt
 
+.ruff_cache/
+
 .agents
 .cursor
 .claude
