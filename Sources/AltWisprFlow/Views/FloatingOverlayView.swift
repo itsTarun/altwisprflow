@@ -30,14 +30,30 @@ struct FloatingOverlayView: View {
             .background(Color.black.opacity(0.7))
             
             if !viewModel.transcript.isEmpty {
-                Text(viewModel.transcript)
-                    .font(.system(size: 14))
-                    .foregroundColor(.white)
-                    .lineLimit(3)
-                    .padding(12)
-                    .frame(maxWidth: 300, alignment: .leading)
-                    .background(Color.black.opacity(0.7))
-                    .cornerRadius(8)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(viewModel.transcript)
+                        .font(.system(size: 14))
+                        .foregroundColor(.white)
+                        .lineLimit(5)
+                    
+                    if viewModel.transcript.contains("API keys") {
+                        Button(action: {
+                            SettingsWindow.shared.show()
+                        }) {
+                            Text("Open Settings")
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue)
+                                .cornerRadius(4)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(12)
+                .frame(maxWidth: 300, alignment: .leading)
+                .background(Color.black.opacity(0.7))
+                .cornerRadius(8)
             }
         }
         .padding(.horizontal, 4)

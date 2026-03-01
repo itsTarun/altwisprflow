@@ -13,9 +13,5 @@ struct AltWisprFlowApp: App {
                 .foregroundColor(.white)
         }
         .menuBarExtraStyle(.window)
-        
-        Settings {
-            SettingsView()
-        }
     }
 }

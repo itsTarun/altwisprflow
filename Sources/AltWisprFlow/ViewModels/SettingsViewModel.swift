@@ -2,7 +2,7 @@ import Combine
 import Foundation
 
 final class SettingsViewModel: ObservableObject {
-    @Published private(set) var preferences = UserPreferences.shared
+    @Published var preferences = UserPreferences.shared
     @Published var showSuccessMessage = false
     @Published var errorMessage: String?
     
@@ -23,7 +23,7 @@ final class SettingsViewModel: ObservableObject {
     func save() {
         do {
             guard preferences.validateKeys() else {
-                errorMessage = "Both API keys are required"
+                errorMessage = "AssemblyAI API key is required"
                 return
             }
             

@@ -1,3 +1,4 @@
+import Foundation
 import GRDB
 
 final class SnippetManager {
@@ -32,7 +33,7 @@ final class SnippetManager {
                 }
             }
         } catch {
-            print("Failed to setup snippets database: \(error)")
+            debugLog("Failed to setup snippets database: \(error)")
         }
     }
     

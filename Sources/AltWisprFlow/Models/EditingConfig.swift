@@ -1,11 +1,11 @@
 import Foundation
 
 struct EditingConfig: Codable {
-    let maxTokens: Int
-    let temperature: Double
-    let removeFillerWords: Bool
-    let correctGrammar: Bool
-    let matchTone: Bool
+    var maxTokens: Int
+    var temperature: Double
+    var removeFillerWords: Bool
+    var correctGrammar: Bool
+    var matchTone: Bool
     
     static let `default` = EditingConfig(
         maxTokens: 256,

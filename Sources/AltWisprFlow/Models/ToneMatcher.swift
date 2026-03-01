@@ -19,8 +19,10 @@ struct ToneMatcher {
     func buildTonePrompt(tone: String, text: String) -> String {
         return """
         Clean up this text for a \(tone):
-        \n        \(text)
-        \n        Keep the same meaning but adjust the tone appropriately.
+        
+        \(text)
+        
+        Keep the same meaning but adjust the tone appropriately.
         Return only the edited text.
         """
     }

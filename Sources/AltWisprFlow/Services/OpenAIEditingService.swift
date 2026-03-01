@@ -11,7 +11,7 @@ final class OpenAIEditingService {
     private func setupClient() {
         guard let apiKeys = KeychainService().loadAPIKeys(),
               !apiKeys.openAI.isEmpty else {
-            print("OpenAI API key not configured")
+            debugLog("OpenAI API key not configured")
             return
         }
         
@@ -30,19 +30,19 @@ final class OpenAIEditingService {
         let prompt = buildEditingPrompt(text: text, config: config)
         
         let query = ChatQuery(
-            messages: [.init(role: .system, content: prompt.system!), .init(role: .user, content: prompt.user)],
+            messages: [.init(role: .system, content: prompt.system!)!, .init(role: .user, content: prompt.user)!],
             model: .gpt4_o_mini,
-            maxTokens: config.maxTokens,
+            maxCompletionTokens: config.maxTokens,
             temperature: config.temperature
         )
         
         let result = try await client.chats(query: query)
         
-        guard let editedText = result.choices.first?.message.content?.string else {
+        guard let editedText = result.choices.first?.message.content else {
             throw EditingError.emptyResponse
         }
         
-        return editedText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return editedText.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
     
     private func buildEditingPrompt(text: String, config: EditingConfig) -> (system: String?, user: String) {

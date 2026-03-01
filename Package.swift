@@ -11,17 +11,17 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/MacPaw/OpenAI", from: "0.2.5"),
-        .package(url: "https://github.com/groue/GRDB.swift", from: "6.0.0"),
-        .package(url: "https://github.com/kishikawakatsumi/KeychainAccess", from: "4.2.2")
+        .package(name: "OpenAI", url: "https://github.com/MacPaw/OpenAI.git", from: "0.2.5"),
+        .package(name: "GRDB", url: "https://github.com/groue/GRDB.swift.git", from: "6.0.0"),
+        .package(name: "KeychainAccess", url: "https://github.com/kishikawakatsumi/KeychainAccess.git", from: "4.2.2")
     ],
     targets: [
         .executableTarget(
             name: "AltWisprFlow",
             dependencies: [
-                "OpenAI",
-                "GRDB",
-                "KeychainAccess"
+                .product(name: "OpenAI", package: "OpenAI"),
+                .product(name: "GRDB", package: "GRDB"),
+                .product(name: "KeychainAccess", package: "KeychainAccess")
             ],
             path: "Sources/AltWisprFlow"
         )

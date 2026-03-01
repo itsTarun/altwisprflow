@@ -1,5 +1,17 @@
 import Cocoa
 
+func debugLog(_ message: String) {
+    let text = "[\(Date())] \(message)\n"
+    if let fileHandle = try? FileHandle(forWritingTo: URL(fileURLWithPath: "/tmp/altwispr_debug.log")) {
+        fileHandle.seekToEndOfFile()
+        fileHandle.write(text.data(using: .utf8)!)
+        try? fileHandle.close()
+    } else {
+        try? text.write(toFile: "/tmp/altwispr_debug.log", atomically: true, encoding: .utf8)
+    }
+    print(message)
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
     static let shared = AppDelegate()
     
@@ -10,23 +22,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     
     override init() {
         super.init()
-        setupAudioSession()
-        requestPermissions()
-    }
-    
-    private func setupAudioSession() {
-        // TODO: Configure AVAudioSession
-    }
-    
-    private func requestPermissions() {
-        // TODO: Request microphone and accessibility permissions
     }
     
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // TODO: Initialize services
+        debugLog("[AltWisprFlow] App launched")
+        _ = HotkeyManager.shared
+        debugLog("[AltWisprFlow] HotkeyManager initialized. Press Control+Option+Space to activate dictation.")
     }
     
     func applicationWillTerminate(_ notification: Notification) {
-        // TODO: Cleanup
+        audioManager.stopCapture()
     }
 }

@@ -1,3 +1,4 @@
+import Foundation
 import GRDB
 
 final class DictionaryManager {
@@ -30,7 +31,7 @@ final class DictionaryManager {
                 }
             }
         } catch {
-            print("Failed to setup database: \(error)")
+            debugLog("Failed to setup database: \(error)")
         }
     }
     
@@ -51,7 +52,7 @@ final class DictionaryManager {
                 }
             }
         } catch {
-            print("Failed to load dictionary: \(error)")
+            debugLog("Failed to load dictionary: \(error)")
         }
         
         let dictionary = PersonalDictionary(words: words)
@@ -74,7 +75,7 @@ final class DictionaryManager {
                 }
             }
         } catch {
-            print("Failed to save dictionary: \(error)")
+            debugLog("Failed to save dictionary: \(error)")
         }
     }
     

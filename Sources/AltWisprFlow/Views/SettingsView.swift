@@ -16,6 +16,10 @@ struct SettingsView: View {
             EditingSettingsView(viewModel: viewModel)
                 .tabItem { Label("Editing", systemImage: "textformat") }
                 .tag(2)
+            
+            HistorySettingsView(viewModel: viewModel)
+                .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
+                .tag(3)
         }
         .frame(width: 500, height: 400)
         .padding()
@@ -54,9 +58,19 @@ struct APIKeysSettingsView: View {
     var body: some View {
         Form {
             Section("API Keys") {
-                SecureField("AssemblyAI API Key", text: $viewModel.preferences.assemblyAIKey)
+                VStack(alignment: .leading) {
+                    Text("AssemblyAI (Required for Transcription)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    SecureField("AssemblyAI API Key", text: $viewModel.preferences.assemblyAIKey)
+                }
                 
-                SecureField("OpenAI API Key", text: $viewModel.preferences.openAIKey)
+                VStack(alignment: .leading) {
+                    Text("OpenAI (Optional for Grammar/Polish)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    SecureField("OpenAI API Key", text: $viewModel.preferences.openAIKey)
+                }
                 
                 HStack {
                     Button("Save") {
@@ -105,6 +119,75 @@ struct EditingSettingsView: View {
                 
                 Slider(value: $viewModel.preferences.editingConfig.temperature, in: 0.0...1.0) {
                     Text("Creativity: \(String(format: "%.1f", viewModel.preferences.editingConfig.temperature))")
+                }
+            }
+        }
+        .padding()
+    }
+}
+
+struct HistorySettingsView: View {
+    @ObservedObject var viewModel: SettingsViewModel
+    @ObservedObject private var overlayVM = FloatingOverlayViewModel.shared
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("System Status:")
+                    .font(.headline)
+                Text(overlayVM.statusMessage)
+                    .foregroundColor(overlayVM.statusMessage.contains("Error") ? .red : .green)
+                Spacer()
+                if !overlayVM.history.isEmpty {
+                    Button("Clear History") {
+                        overlayVM.clearHistory()
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+            .padding(.bottom, 4)
+            
+            Divider()
+            
+            if overlayVM.history.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "mic.slash")
+                        .font(.system(size: 48))
+                        .foregroundColor(.secondary)
+                    Text("No history yet")
+                        .font(.headline)
+                    Text("Your dictated text will appear here.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List {
+                    ForEach(overlayVM.history, id: \.self) { item in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(item)
+                                .font(.body)
+                                .textSelection(.enabled)
+                            
+                            HStack {
+                                Text(Date(), style: .time)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString(item, forType: .string)
+                                }) {
+                                    Label("Copy", systemImage: "doc.on.doc")
+                                        .font(.caption)
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                        }
+                        .padding(.vertical, 6)
+                    }
                 }
             }
         }

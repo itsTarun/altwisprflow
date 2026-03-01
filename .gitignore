@@ -34,3 +34,20 @@ Thumbs.db
 
 # Misc
 *.log
+*.raw
+*.wav
+*.aiff
+
+# Development Scripts
+check_keychain.swift
+check_keys.swift
+save_keys.swift
+test.swift
+test_*.py
+test_sdk.py
+trigger_hotkey.scpt
+*.scpt
+
+.agents
+.cursor
+.claude

@@ -27,6 +27,6 @@ final class UserPreferences: ObservableObject {
     }
     
     func validateKeys() -> Bool {
-        return !assemblyAIKey.isEmpty && !openAIKey.isEmpty
+        return !assemblyAIKey.isEmpty
     }
 }
