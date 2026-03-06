@@ -55,4 +55,4 @@ trigger_hotkey.scpt
 
 .agents
 .cursor
-.claude
+.claude.worktrees/
