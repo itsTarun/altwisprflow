@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-final class AssemblyAITranscriptionService: ObservableObject {
+final class AssemblyAITranscriptionService: ObservableObject, TranscriptionProvider {
     private let keychainService: KeychainService
     private var webSocketTask: URLSessionWebSocketTask?
     private let session = URLSession(configuration: .default)
