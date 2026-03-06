@@ -12,7 +12,7 @@ final class FloatingOverlayViewModel: ObservableObject {
     @Published var statusMessage: String = "Ready"
     
     private var audioManager = AudioCaptureManager.shared
-    private var transcriptionService = AssemblyAITranscriptionService()
+    private var transcriptionService: TranscriptionProvider = AssemblyAITranscriptionService()
     private var editingService = OpenAIEditingService()
     private var historyManager = HistoryManager.shared
     
