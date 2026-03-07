@@ -1,8 +1,5 @@
 import Foundation
 import Combine
-import MLX
-import MLXAudioCore
-// import MLXAudioSTT // Missing WhisperModel?
 
 final class LocalMLXProvider: TranscriptionProvider {
     private let transcriptSubject = PassthroughSubject<Transcript, Error>()
@@ -33,10 +30,10 @@ final class LocalMLXProvider: TranscriptionProvider {
                 
                 let modelDir = ModelDownloader.shared.modelsDirectory(for: repoId)
                 
-                // TODO: Load MLX Whisper model here
-                // let model = try await WhisperModel.fromPretrained(modelDir.path)
+                // Use the mock model for now to unblock UI integration
+                let model = try await WhisperModel.fromPretrained(modelDir.path)
                 
-                startInferenceLoop()
+                startInferenceLoop(with: model)
             } catch {
                 transcriptSubject.send(completion: .failure(error))
                 disconnect()
@@ -69,7 +66,7 @@ final class LocalMLXProvider: TranscriptionProvider {
         bufferLock.unlock()
     }
     
-    private func startInferenceLoop() {
+    private func startInferenceLoop(with model: WhisperModel) {
         inferenceTask = Task {
             while !Task.isCancelled && isConnected {
                 bufferLock.lock()
@@ -79,12 +76,10 @@ final class LocalMLXProvider: TranscriptionProvider {
                     audioBuffer.removeAll()
                     bufferLock.unlock()
                     
-                    // TODO: Run inference
-                    // let audioArray = MLXArray(samplesToProcess)
-                    // let result = model.generate(audio: audioArray)
+                    let text = await model.generate(audio: samplesToProcess)
                     
                     let transcript = Transcript(
-                        text: "[Mock Transcription for \(samplesToProcess.count) samples]",
+                        text: text,
                         isFinal: true,
                         confidence: 1.0,
                         startTime: Date().timeIntervalSince1970,
