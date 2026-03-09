@@ -54,9 +54,20 @@ struct GeneralSettingsView: View {
 
 struct APIKeysSettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
+    @AppStorage("transcriptionMode") private var transcriptionMode: TranscriptionMode = .cloud
+    @ObservedObject private var overlayVM = FloatingOverlayViewModel.shared
     
     var body: some View {
         Form {
+            Section("Transcription Backend") {
+                Picker("Mode", selection: $transcriptionMode) {
+                    ForEach(TranscriptionMode.allCases) { mode in
+                        Text(mode.rawValue).tag(mode)
+                    }
+                }
+                .disabled(overlayVM.isRecording)
+            }
+            
             Section("API Keys") {
                 VStack(alignment: .leading) {
                     Text("AssemblyAI (Required for Transcription)")
