@@ -11,6 +11,7 @@ final class FloatingOverlayViewModel: ObservableObject {
     @Published var showPreview: Bool = false
     @Published var history: [String] = []
     @Published var statusMessage: String = "Ready"
+    @Published var isLatched: Bool = false
     
     private var audioManager = AudioCaptureManager.shared
     private var transcriptionService: TranscriptionProvider = AssemblyAITranscriptionService()
@@ -43,6 +44,7 @@ final class FloatingOverlayViewModel: ObservableObject {
     func toggleRecording() {
         debugLog("[FloatingOverlayViewModel] toggleRecording called. isRecording: \(isRecording), isStarting: \(isStarting)")
         if isRecording {
+            isLatched = false
             stopRecording()
         } else {
             if !isStarting {
@@ -214,9 +216,17 @@ final class FloatingOverlayViewModel: ObservableObject {
             
         HotkeyManager.shared.activatedPublisher
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                debugLog("[FloatingOverlayViewModel] Received hotkey activation event!")
-                self?.toggleRecording()
+            .sink { [weak self] action in
+                debugLog("[FloatingOverlayViewModel] Received hotkey activation event: \(action)")
+                switch action {
+                case .start:
+                    self?.startRecording()
+                case .stop:
+                    self?.isLatched = false
+                    self?.stopRecording()
+                case .latched:
+                    self?.isLatched = true
+                }
             }
             .store(in: &cancellables)
     }
