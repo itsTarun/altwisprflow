@@ -1,11 +1,11 @@
 import AppKit
 import SwiftUI
 
-final class FloatingOverlayWindow: NSWindow {
+final class FloatingOverlayWindow: NSPanel {
     static let shared: FloatingOverlayWindow = {
         let window = FloatingOverlayWindow(
             contentRect: CGRect(x: 0, y: 0, width: 350, height: 120),
-            styleMask: .borderless,
+            styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
@@ -13,6 +13,14 @@ final class FloatingOverlayWindow: NSWindow {
     }()
     
     private var hostingView: NSHostingView<FloatingOverlayView>?
+    
+    override var canBecomeKey: Bool {
+        return false // Never steal keyboard focus
+    }
+    
+    override var canBecomeMain: Bool {
+        return false // Never steal main window status
+    }
     
     override init(contentRect: NSRect, styleMask style: NSWindow.StyleMask, backing backingStoreType: NSWindow.BackingStoreType, defer flag: Bool) {
         super.init(contentRect: contentRect, styleMask: style, backing: backingStoreType, defer: flag)
@@ -50,9 +58,8 @@ final class FloatingOverlayWindow: NSWindow {
     
     func show() {
         debugLog("[FloatingOverlayWindow] Showing overlay")
+        // Just show the window, do not make it key, do not activate app
         orderFront(nil)
-        makeKeyAndOrderFront(nil)
-        NSApplication.shared.activate(ignoringOtherApps: true)
     }
     
     func hide() {

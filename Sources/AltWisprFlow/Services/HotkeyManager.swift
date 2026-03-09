@@ -23,8 +23,8 @@ final class HotkeyManager {
         activatedSubject.eraseToAnyPublisher()
     }
     
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
+    private var eventTap: CFMachPort?
+    private var runLoopSource: CFRunLoopSource?
     
     private var state: HotkeyState = .idle
     private var isFnCurrentlyDown = false
@@ -35,29 +35,54 @@ final class HotkeyManager {
     }
     
     private func setupEventMonitors() {
-        // Global monitor - detects keys when OTHER apps are focused (requires Accessibility)
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.handleFlagsChanged(event)
-        }
-        debugLog("[HotkeyManager] Global event monitor registered: \(globalMonitor != nil)")
+        let eventMask = (1 << CGEventType.flagsChanged.rawValue)
         
-        // Local monitor - detects keys when THIS app is focused
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.handleFlagsChanged(event)
-            return event
-        }
-        debugLog("[HotkeyManager] Local event monitor registered: \(localMonitor != nil)")
-    }
-    
-    private func handleFlagsChanged(_ event: NSEvent) {
-        let isDownNow = event.modifierFlags.contains(.function)
-        if isDownNow != isFnCurrentlyDown {
-            isFnCurrentlyDown = isDownNow
-            if isDownNow {
-                handleFnDown()
-            } else {
-                handleFnUp()
+        let callback: CGEventTapCallBack = { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
+            guard type == .flagsChanged, let refcon = refcon else {
+                return Unmanaged.passRetained(event)
             }
+            
+            let manager = Unmanaged<HotkeyManager>.fromOpaque(refcon).takeUnretainedValue()
+            let flags = event.flags
+            
+            // Mask for the Fn key
+            let isFnDown = flags.contains(.maskSecondaryFn)
+            
+            // If the state changed
+            if isFnDown != manager.isFnCurrentlyDown {
+                manager.isFnCurrentlyDown = isFnDown
+                
+                DispatchQueue.main.async {
+                    if isFnDown {
+                        manager.handleFnDown()
+                    } else {
+                        manager.handleFnUp()
+                    }
+                }
+                
+                // Return nil to swallow the event so the OS Emoji picker doesn't open
+                return nil
+            }
+            
+            return Unmanaged.passRetained(event)
+        }
+        
+        eventTap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .defaultTap,
+            eventsOfInterest: CGEventMask(eventMask),
+            callback: callback,
+            userInfo: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
+        )
+        
+        if let tap = eventTap {
+            runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
+            CGEvent.tapEnable(tap: tap, enable: true)
+            debugLog("[HotkeyManager] CGEventTap registered successfully")
+        } else {
+            debugLog("[HotkeyManager] Failed to register CGEventTap. Ensure Accessibility permissions are granted.")
         }
     }
     
@@ -136,11 +161,11 @@ final class HotkeyManager {
     }
     
     deinit {
-        if let globalMonitor = globalMonitor {
-            NSEvent.removeMonitor(globalMonitor)
-        }
-        if let localMonitor = localMonitor {
-            NSEvent.removeMonitor(localMonitor)
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            if let rlSource = runLoopSource {
+                CFRunLoopRemoveSource(CFRunLoopGetCurrent(), rlSource, .commonModes)
+            }
         }
         cancelTimer()
     }

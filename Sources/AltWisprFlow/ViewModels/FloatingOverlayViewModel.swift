@@ -13,6 +13,8 @@ final class FloatingOverlayViewModel: ObservableObject {
     @Published var statusMessage: String = "Ready"
     @Published var isLatched: Bool = false
     
+    private var finalizedSegments: [String] = []
+    
     private var audioManager = AudioCaptureManager.shared
     private var transcriptionService: TranscriptionProvider = AssemblyAITranscriptionService()
     private var editingService = OpenAIEditingService()
@@ -79,6 +81,7 @@ final class FloatingOverlayViewModel: ObservableObject {
         
         isRecording = true
         transcript = "Listening..."
+        finalizedSegments = []
         statusMessage = "Connecting..."
         isFinalTranscript = false
         
@@ -183,21 +186,20 @@ final class FloatingOverlayViewModel: ObservableObject {
         audioManager.stopCapture()
         transcriptionService.disconnect()
         
-        if !isFinalTranscript, !transcript.isEmpty, transcript != "Listening..." {
+        let finalOutput = finalizedSegments.joined(separator: " ")
+        self.transcript = finalOutput
+        
+        if !finalOutput.isEmpty, finalOutput != "Listening..." {
             if !UserPreferences.shared.openAIKey.isEmpty {
                 transcript = "Polishing text..."
                 Task {
-                    await self.editAndSend(transcript)
+                    await self.editAndSend(finalOutput)
                 }
             } else {
                 debugLog("[FloatingOverlayViewModel] OpenAI key missing, skipping polish")
-                self.copyToClipboard(transcript)
+                self.copyToClipboard(finalOutput)
                 self.pasteToActiveApp()
             }
-        } else if isFinalTranscript && UserPreferences.shared.openAIKey.isEmpty {
-             // If it was already final and no OpenAI, it should have been pasted
-             // but let's be safe
-             FloatingOverlayWindow.shared.hide()
         } else {
             FloatingOverlayWindow.shared.hide()
         }
@@ -254,22 +256,12 @@ final class FloatingOverlayViewModel: ObservableObject {
     @MainActor
     private func handleTranscriptUpdate(_ transcript: Transcript) {
         if transcript.isFinal {
-            self.isFinalTranscript = true
-            self.transcript = transcript.text
-            self.statusMessage = "Transcription Complete"
-            if !UserPreferences.shared.openAIKey.isEmpty {
-                Task {
-                    self.statusMessage = "Polishing text..."
-                    await self.editAndSend(transcript.text)
-                }
-            } else {
-                debugLog("[FloatingOverlayViewModel] OpenAI key missing, pasting raw text")
-                self.copyToClipboard(transcript.text)
-                self.pasteToActiveApp()
-                self.statusMessage = "Ready"
-            }
+            self.finalizedSegments.append(transcript.text)
+            self.transcript = self.finalizedSegments.joined(separator: " ")
+            self.statusMessage = "Transcribing..."
         } else {
-            self.transcript = transcript.text
+            let partialText = self.finalizedSegments.joined(separator: " ") + " " + transcript.text
+            self.transcript = partialText.trimmingCharacters(in: .whitespaces)
             self.statusMessage = "Transcribing..."
         }
     }
