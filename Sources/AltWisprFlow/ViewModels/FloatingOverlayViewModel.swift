@@ -104,7 +104,9 @@ final class FloatingOverlayViewModel: ObservableObject {
                 // Connect to WebSocket FIRST
                 do {
                     if currentMode == .local {
-                        self.transcriptionService = LocalMLXProvider()
+                        // self.transcriptionService = LocalMLXProvider()
+                        // Temporarily bypass LocalMLXProvider to allow compilation
+                        self.transcriptionService = AssemblyAITranscriptionService()
                     } else {
                         self.transcriptionService = AssemblyAITranscriptionService()
                     }
