@@ -6,8 +6,8 @@ struct FloatingOverlayView: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                Image(systemName: viewModel.isRecording ? "mic.fill" : "mic.slash")
-                    .foregroundColor(viewModel.isRecording ? .red : .secondary)
+                Image(systemName: viewModel.isLatched ? "lock.fill" : (viewModel.isRecording ? "mic.fill" : "mic.slash"))
+                    .foregroundColor(viewModel.isLatched ? .purple : (viewModel.isRecording ? .red : .secondary))
                     .font(.system(size: 20))
                 
                 if viewModel.confidence > 0 {
@@ -28,6 +28,7 @@ struct FloatingOverlayView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color.black.opacity(0.7))
+            .shadow(color: viewModel.isLatched ? .purple : .clear, radius: 8)
             
             if !viewModel.transcript.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
@@ -54,6 +55,7 @@ struct FloatingOverlayView: View {
                 .frame(maxWidth: 300, alignment: .leading)
                 .background(Color.black.opacity(0.7))
                 .cornerRadius(8)
+                .shadow(color: viewModel.isLatched ? .purple : .clear, radius: 8)
             }
         }
         .padding(.horizontal, 4)
