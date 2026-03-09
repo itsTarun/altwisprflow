@@ -1,5 +1,6 @@
 import Combine
 import AppKit
+import SwiftUI
 
 final class FloatingOverlayViewModel: ObservableObject {
     static let shared = FloatingOverlayViewModel()
@@ -15,6 +16,9 @@ final class FloatingOverlayViewModel: ObservableObject {
     private var transcriptionService: TranscriptionProvider = AssemblyAITranscriptionService()
     private var editingService = OpenAIEditingService()
     private var historyManager = HistoryManager.shared
+    
+    @AppStorage("transcriptionMode") private var transcriptionMode: TranscriptionMode = .cloud
+    private var transcriptionCancellable: AnyCancellable?
     
     private var cancellables = Set<AnyCancellable>()
     private var isFinalTranscript = false
@@ -56,21 +60,24 @@ final class FloatingOverlayViewModel: ObservableObject {
         startTask?.cancel()
         
         // 1. Check keys FIRST
-        guard KeychainService().hasAPIKeys() else {
-            debugLog("[FloatingOverlayViewModel] Cannot start: Missing API keys in Keychain")
-            isStarting = false
-            self.transcript = "Error: Please set API keys in Settings"
-            self.statusMessage = "Error: Missing API Keys"
-            FloatingOverlayWindow.shared.show()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
-                FloatingOverlayWindow.shared.hide()
+        let currentMode = transcriptionMode
+        if currentMode == .cloud {
+            guard KeychainService().hasAPIKeys() else {
+                debugLog("[FloatingOverlayViewModel] Cannot start: Missing API keys in Keychain")
+                isStarting = false
+                self.transcript = "Error: Please set API keys in Settings"
+                self.statusMessage = "Error: Missing API Keys"
+                FloatingOverlayWindow.shared.show()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                    FloatingOverlayWindow.shared.hide()
+                }
+                return
             }
-            return
         }
         
         isRecording = true
         transcript = "Listening..."
-        statusMessage = "Connecting to AssemblyAI..."
+        statusMessage = "Connecting..."
         isFinalTranscript = false
         
         startTask = Task {
@@ -94,6 +101,13 @@ final class FloatingOverlayViewModel: ObservableObject {
                 
                 // Connect to WebSocket FIRST
                 do {
+                    if currentMode == .local {
+                        self.transcriptionService = LocalMLXProvider()
+                    } else {
+                        self.transcriptionService = AssemblyAITranscriptionService()
+                    }
+                    setupTranscriptionBinding()
+                    
                     try transcriptionService.connect(sampleRate: 16000)
                     await MainActor.run {
                         self.statusMessage = "Connecting..."
@@ -196,7 +210,21 @@ final class FloatingOverlayViewModel: ObservableObject {
             })
             .store(in: &cancellables)
         
-        transcriptionService.transcriptPublisher
+        setupTranscriptionBinding()
+            
+        HotkeyManager.shared.activatedPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                debugLog("[FloatingOverlayViewModel] Received hotkey activation event!")
+                self?.toggleRecording()
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func setupTranscriptionBinding() {
+        transcriptionCancellable?.cancel()
+        
+        transcriptionCancellable = transcriptionService.transcriptPublisher
             .sink(receiveCompletion: { [weak self] completion in
                 if case .failure(let error) = completion {
                     debugLog("Transcription error: \(error)")
@@ -209,15 +237,6 @@ final class FloatingOverlayViewModel: ObservableObject {
                     await self?.handleTranscriptUpdate(transcript)
                 }
             })
-            .store(in: &cancellables)
-            
-        HotkeyManager.shared.activatedPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                debugLog("[FloatingOverlayViewModel] Received hotkey activation event!")
-                self?.toggleRecording()
-            }
-            .store(in: &cancellables)
     }
     
     @MainActor
